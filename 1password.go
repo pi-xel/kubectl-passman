@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -25,12 +24,13 @@ type opResponseField struct {
 }
 
 var defaultOpGet = func(itemName string) (*opResponse, error) {
-	out, err := exec.Command("op", "get", "item", itemName).Output()
+	out, err := exec.Command("op", "item", "get", itemName, "--fields", "password", "--format", "json").CombinedOutput()
 	if err != nil {
+		fmt.Printf("%s\n", out)
 		return nil, err
 	}
-	var resp opResponse
-	err = json.Unmarshal(out, &resp)
+	resp := opResponse{Details: opResponseDetails{Fields: []opResponseField{opResponseField{}}}}
+	err = json.Unmarshal(out, &resp.Details.Fields[0])
 	if err != nil {
 		return nil, err
 	}
@@ -43,6 +43,7 @@ func opgetter(itemName string) (string, error) {
 		return "", err
 	}
 	for _, v := range resp.Details.Fields {
+		return v.Value, nil
 		if v.Designation == "password" {
 			return v.Value, nil
 		}
@@ -51,24 +52,8 @@ func opgetter(itemName string) (string, error) {
 }
 
 func opsetter(itemName, secret string) error {
-	var res = &opResponseDetails{
-		Fields: []opResponseField{
-			{
-				Name:        "password",
-				Designation: "password",
-				Type:        "P",
-				Value:       secret,
-			},
-		},
-	}
-
-	jsonResponse, err := json.Marshal(res)
-	if err != nil {
-		return err
-	}
-
-	stdoutStderr, err := exec.Command("op", "create", "item", "login",
-		base64.StdEncoding.EncodeToString(jsonResponse), "--title="+itemName).CombinedOutput()
+	stdoutStderr, err := exec.Command("op", "item", "create", "--category=login",
+		"password="+secret, "--title="+itemName).CombinedOutput()
 
 	fmt.Printf("%s\n", stdoutStderr)
 	return err
