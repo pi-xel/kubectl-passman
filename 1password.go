@@ -24,7 +24,7 @@ type opResponseField struct {
 }
 
 var defaultOpGet = func(itemName string) (*opResponse, error) {
-	out, err := exec.Command("op", "item", "get", itemName, "--fields", "password", "--format", "json").CombinedOutput()
+	out, err := exec.Command("op", "item", "get", itemName, "--fields", "credential", "--format", "json").CombinedOutput()
 	if err != nil {
 		fmt.Printf("%s\n", out)
 		return nil, err
@@ -44,16 +44,13 @@ func opgetter(itemName string) (string, error) {
 	}
 	for _, v := range resp.Details.Fields {
 		return v.Value, nil
-		if v.Designation == "password" {
-			return v.Value, nil
-		}
 	}
 	return "", errors.New("unable to find password")
 }
 
 func opsetter(itemName, secret string) error {
-	stdoutStderr, err := exec.Command("op", "item", "create", "--category=login",
-		"password="+secret, "--title="+itemName).CombinedOutput()
+	stdoutStderr, err := exec.Command("op", "item", "create", `--category=API Credential`,
+		"credential="+secret, "--title="+itemName).CombinedOutput()
 
 	fmt.Printf("%s\n", stdoutStderr)
 	return err
