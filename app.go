@@ -19,7 +19,7 @@ var VERSION = "0.0.0"
 var app = cli.NewApp()
 
 func cliCommands() {
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name:      "keychain",
 			Usage:     "Use keychain/keyring",
@@ -59,7 +59,7 @@ func cliHandler(c *cli.Context) error {
 func cliInfo() {
 	app.Name = "kubectl-passman"
 	app.Usage = "Store kubeconfig credentials in keychains or password managers"
-	app.Authors = []cli.Author{
+	app.Authors = []*cli.Author{
 		{
 			Name:  "Chris Nesbitt-Smith",
 			Email: "chris@cns.me.uk",
